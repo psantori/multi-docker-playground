@@ -1,0 +1,22 @@
+language: generic 
+sudo: required
+
+services:
+    - docker
+
+before_install:
+    - docker build -t psantori/multi-docker-playground -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run -e CI=true psantori/multi-docker-playground npm test
+
+after_succes:
+    - docker build -t psantori/multi-docker-playground-client ./client
+    - docker build -t psantori/multi-docker-playground-nginx ./nginx
+    - docker build -t psantori/multi-docker-playground-server ./server
+    - docker build -t psantori/multi-docker-playground-worker ./worker
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push  psantori/multi-docker-playground-client
+    - docker push  psantori/multi-docker-playground-nginx
+    - docker push  psantori/multi-docker-playground-server
+    - docker push  psantori/multi-docker-playground-worker
